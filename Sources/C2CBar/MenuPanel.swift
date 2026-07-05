@@ -6,17 +6,12 @@ import SwiftUI
 struct MenuPanel: View {
     @ObservedObject var store: MarketStore
     @State private var panelMode: MenuPanelMode = .market
-    @State private var measuredContentHeight: CGFloat?
 
     private var snapshot: MarketSnapshot {
         store.snapshot
     }
 
     var body: some View {
-        let targetSize = measuredContentHeight.map {
-            MenuPanelWindowLayout.windowSize(measuredContentHeight: Double($0))
-        }
-
         VStack(spacing: 0) {
             HeaderBar(
                 store: store,
@@ -42,119 +37,11 @@ struct MenuPanel: View {
             .frame(maxWidth: .infinity, alignment: .top)
         }
         .frame(width: CGFloat(MenuPanelWindowLayout.width), alignment: .top)
-        .background(MenuPanelHeightReader())
-        .onPreferenceChange(MenuPanelHeightPreferenceKey.self) { height in
-            guard height > 0, abs((measuredContentHeight ?? 0) - height) > 0.5 else {
-                return
-            }
-
-            measuredContentHeight = height
-        }
         .background(PanelBackground())
-        .overlay {
-            WindowContentSizeSynchronizer(targetSize: targetSize)
-                .frame(width: 0, height: 0)
-                .allowsHitTesting(false)
-        }
         .foregroundStyle(.primary)
         .transaction { transaction in
             transaction.animation = nil
         }
-    }
-}
-
-private struct MenuPanelHeightReader: View {
-    var body: some View {
-        GeometryReader { proxy in
-            Color.clear.preference(
-                key: MenuPanelHeightPreferenceKey.self,
-                value: proxy.size.height
-            )
-        }
-    }
-}
-
-private struct MenuPanelHeightPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
-    }
-}
-
-private struct WindowContentSizeSynchronizer: NSViewRepresentable {
-    let targetSize: MenuPanelWindowSize?
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    func makeNSView(context: Context) -> WindowSizingProbeView {
-        let view = WindowSizingProbeView()
-        view.onWindowChange = { [weak view, weak coordinator = context.coordinator] in
-            guard let view else { return }
-            coordinator?.synchronizeWindow(for: view)
-        }
-        return view
-    }
-
-    func updateNSView(_ view: WindowSizingProbeView, context: Context) {
-        context.coordinator.targetSize = targetSize
-        context.coordinator.synchronizeWindow(for: view)
-    }
-
-    @MainActor
-    final class Coordinator {
-        var targetSize: MenuPanelWindowSize?
-
-        func synchronizeWindow(for view: NSView) {
-            guard let targetSize, let window = view.window else {
-                return
-            }
-
-            let currentSize = window.contentView?.bounds.size ?? window.contentLayoutRect.size
-            let current = MenuPanelWindowSize(
-                width: Double(currentSize.width),
-                height: Double(currentSize.height)
-            )
-
-            guard let request = MenuPanelWindowResizeRequest.request(
-                current: current,
-                target: targetSize
-            ) else {
-                return
-            }
-
-            let targetContentSize = NSSize(
-                width: request.targetSize.width,
-                height: request.targetSize.height
-            )
-            let targetFrameSize = window.frameRect(
-                forContentRect: NSRect(origin: .zero, size: targetContentSize)
-            ).size
-            var targetFrame = window.frame
-            targetFrame.origin.y = window.frame.maxY - targetFrameSize.height
-            targetFrame.size = targetFrameSize
-
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0
-                context.allowsImplicitAnimation = false
-                // Keep height flexible; locking max height here prevents later mode changes from measuring taller content.
-                window.contentMinSize = NSSize(width: targetContentSize.width, height: 1)
-                window.contentMaxSize = NSSize(width: targetContentSize.width, height: 10_000)
-                window.setFrame(targetFrame, display: true, animate: false)
-            }
-        }
-    }
-}
-
-@MainActor
-private final class WindowSizingProbeView: NSView {
-    var onWindowChange: (() -> Void)?
-
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        onWindowChange?()
     }
 }
 

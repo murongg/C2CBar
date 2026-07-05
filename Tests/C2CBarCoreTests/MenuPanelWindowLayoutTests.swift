@@ -9,28 +9,20 @@ final class MenuPanelWindowLayoutTests: XCTestCase {
         XCTAssertEqual(size.height, 372)
     }
 
-    func testResizeRequestTracksDisplayModeSizeChanges() {
+    func testResizeRequestUsesNativeMenuBarWindowSizing() {
         let standardMarketSize = MenuPanelWindowLayout.windowSize(measuredContentHeight: 488)
         let compactMarketSize = MenuPanelWindowLayout.windowSize(measuredContentHeight: 371.2)
         let minimalMarketSize = MenuPanelWindowLayout.windowSize(measuredContentHeight: 278)
 
-        XCTAssertEqual(
+        XCTAssertNil(
             MenuPanelWindowResizeRequest.request(
                 current: standardMarketSize,
                 target: compactMarketSize
-            )?.targetSize,
-            compactMarketSize
-        )
-        XCTAssertEqual(
-            MenuPanelWindowResizeRequest.request(
-                current: compactMarketSize,
-                target: minimalMarketSize
-            )?.targetSize,
-            minimalMarketSize
+            )
         )
         XCTAssertNil(
             MenuPanelWindowResizeRequest.request(
-                current: minimalMarketSize,
+                current: compactMarketSize,
                 target: minimalMarketSize
             )
         )

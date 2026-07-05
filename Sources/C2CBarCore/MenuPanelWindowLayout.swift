@@ -29,13 +29,7 @@ public struct MenuPanelWindowResizeRequest: Equatable, Sendable {
         target: MenuPanelWindowSize,
         tolerance: Double = 0.5
     ) -> MenuPanelWindowResizeRequest? {
-        let widthDelta = abs(current.width - target.width)
-        let heightDelta = abs(current.height - target.height)
-
-        guard widthDelta > tolerance || heightDelta > tolerance else {
-            return nil
-        }
-
-        return MenuPanelWindowResizeRequest(targetSize: target)
+        // MenuBarExtra owns its popup window; resizing it through AppKit during SwiftUI layout can crash when the menu item opens.
+        return nil
     }
 }
