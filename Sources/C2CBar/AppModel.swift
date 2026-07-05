@@ -41,10 +41,14 @@ final class MarketStore: ObservableObject {
             applyStartupPreference()
         }
     }
-    @Published var priceAlertsEnabled = true {
+    @Published var priceAlertsEnabled = false {
         didSet {
             persistPreferences()
-            if priceAlertsEnabled {
+            if PriceAlertAuthorizationPolicy.shouldPromptForAuthorization(
+                context: .userChangedSetting,
+                priceAlertsEnabled: priceAlertsEnabled,
+                wasPriceAlertsEnabled: oldValue
+            ) {
                 requestNotificationAuthorization()
             }
         }
@@ -110,7 +114,11 @@ final class MarketStore: ObservableObject {
         ensureSelectedAssetIsVisible()
         refreshStartupStatus()
         applyStartupPreference()
-        if priceAlertsEnabled {
+        if PriceAlertAuthorizationPolicy.shouldPromptForAuthorization(
+            context: .appLaunch,
+            priceAlertsEnabled: priceAlertsEnabled,
+            wasPriceAlertsEnabled: priceAlertsEnabled
+        ) {
             requestNotificationAuthorization()
         }
         refresh()

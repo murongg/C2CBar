@@ -5,6 +5,27 @@ public enum PriceAlertKind: String, Codable, Equatable, Sendable {
     case buyPriceBelowThreshold
 }
 
+public enum PriceAlertAuthorizationContext: Equatable, Sendable {
+    case appLaunch
+    case userChangedSetting
+    case automaticAlertDelivery
+}
+
+public enum PriceAlertAuthorizationPolicy {
+    public static func shouldPromptForAuthorization(
+        context: PriceAlertAuthorizationContext,
+        priceAlertsEnabled: Bool,
+        wasPriceAlertsEnabled: Bool
+    ) -> Bool {
+        switch context {
+        case .appLaunch, .automaticAlertDelivery:
+            return false
+        case .userChangedSetting:
+            return priceAlertsEnabled && !wasPriceAlertsEnabled
+        }
+    }
+}
+
 public struct PriceAlertEvent: Equatable, Sendable {
     public let id: String
     public let kind: PriceAlertKind

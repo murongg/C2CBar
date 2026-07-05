@@ -62,7 +62,7 @@ final class PriceAlertNotificationService: PriceAlertNotifying {
     }
 
     func deliver(_ event: PriceAlertEvent) async -> NotificationServiceStatus {
-        let authorizationStatus = await requestAuthorization()
+        let authorizationStatus = await currentAuthorizationStatus()
         guard authorizationStatus == .authorized else {
             return authorizationStatus
         }
@@ -86,6 +86,28 @@ final class PriceAlertNotificationService: PriceAlertNotifying {
                     continuation.resume(returning: .failed(error.localizedDescription))
                 } else {
                     continuation.resume(returning: .authorized)
+                }
+            }
+        }
+    }
+
+    private func currentAuthorizationStatus() async -> NotificationServiceStatus {
+        guard supportsUserNotifications else {
+            return .unavailable
+        }
+
+        let center = centerProvider()
+        return await withCheckedContinuation { continuation in
+            center.getNotificationSettings { settings in
+                switch settings.authorizationStatus {
+                case .authorized, .provisional, .ephemeral:
+                    continuation.resume(returning: .authorized)
+                case .denied:
+                    continuation.resume(returning: .denied)
+                case .notDetermined:
+                    continuation.resume(returning: .notRequested)
+                @unknown default:
+                    continuation.resume(returning: .unavailable)
                 }
             }
         }

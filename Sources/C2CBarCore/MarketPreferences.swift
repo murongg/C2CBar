@@ -20,8 +20,8 @@ public struct MarketPreferences: Codable, Equatable, Sendable {
         refreshIntervalSeconds: RefreshIntervalOption.defaultOption.seconds,
         showUSDT: true,
         showUSDC: true,
-        startAtLogin: true,
-        priceAlertsEnabled: true,
+        startAtLogin: false,
+        priceAlertsEnabled: false,
         referenceSource: .wise,
         fiat: .cny,
         visibleExchanges: C2CExchange.liveSupported
