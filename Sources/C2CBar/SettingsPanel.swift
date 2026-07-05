@@ -45,19 +45,6 @@ struct SettingsPanel: View {
                             Text(option.displayName).tag(option.seconds)
                         }
                     }
-
-                    HStack {
-                        Toggle("开机启动", isOn: $store.startAtLogin)
-                        Spacer()
-                        Text(store.startupStatusText)
-                            .foregroundStyle(.secondary)
-                    }
-                    HStack {
-                        Toggle("价格提醒", isOn: $store.priceAlertsEnabled)
-                        Spacer()
-                        Text(store.notificationStatusText)
-                            .foregroundStyle(.secondary)
-                    }
                 }
 
                 Section("基准") {

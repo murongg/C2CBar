@@ -19,8 +19,6 @@ final class MarketPreferencesStorageTests: XCTestCase {
             refreshIntervalSeconds: 900,
             showUSDT: false,
             showUSDC: true,
-            startAtLogin: false,
-            priceAlertsEnabled: false,
             referenceSource: .ecb,
             fiat: .cny,
             visibleExchanges: [.binance, .htx]

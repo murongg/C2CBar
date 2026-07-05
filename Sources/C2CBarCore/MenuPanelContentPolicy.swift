@@ -19,10 +19,6 @@ public struct MenuPanelContentPolicy: Equatable, Sendable {
         displayMode == .compact
     }
 
-    public var showsAlertPreview: Bool {
-        displayMode == .standard
-    }
-
     public var showsFooter: Bool {
         true
     }

@@ -12,7 +12,6 @@ final class MenuPanelContentPolicyTests: XCTestCase {
 
         XCTAssertTrue(policy.showsReferenceRate)
         XCTAssertFalse(policy.showsPlatformTable)
-        XCTAssertFalse(policy.showsAlertPreview)
         XCTAssertTrue(policy.showsFooter)
     }
 }

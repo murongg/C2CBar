@@ -35,24 +35,6 @@ final class MarketStore: ObservableObject {
             refresh()
         }
     }
-    @Published var startAtLogin = true {
-        didSet {
-            persistPreferences()
-            applyStartupPreference()
-        }
-    }
-    @Published var priceAlertsEnabled = false {
-        didSet {
-            persistPreferences()
-            if PriceAlertAuthorizationPolicy.shouldPromptForAuthorization(
-                context: .userChangedSetting,
-                priceAlertsEnabled: priceAlertsEnabled,
-                wasPriceAlertsEnabled: oldValue
-            ) {
-                requestNotificationAuthorization()
-            }
-        }
-    }
     @Published var referenceSource: ReferenceRateSource = .wise {
         didSet {
             persistPreferences()
@@ -74,12 +56,8 @@ final class MarketStore: ObservableObject {
         }
     }
     @Published private(set) var dataState: MarketDataState = .mock
-    @Published private(set) var startupStatusText = StartupServiceStatus.disabled.displayText
-    @Published private(set) var notificationStatusText = NotificationServiceStatus.notRequested.displayText
 
     private let preferencesStorage: MarketPreferencesStorage
-    private let startupService: StartupServiceManaging
-    private let notificationService: PriceAlertNotifying
     private let binanceClient = BinanceP2PClient()
     private let okxClient = OKXP2PClient()
     private let htxClient = HTXP2PClient()
@@ -87,18 +65,13 @@ final class MarketStore: ObservableObject {
     private var liveQuotes: [C2CQuote]?
     private var liveReferenceRate: ReferenceRate?
     private var liveRefreshedAt: Date?
-    private var priceAlertEvaluator = PriceAlertEvaluator()
     private var refreshTask: Task<Void, Never>?
     private var refreshLoopTask: Task<Void, Never>?
 
     init(
-        preferencesStorage: MarketPreferencesStorage = UserDefaultsMarketPreferencesStorage(),
-        startupService: StartupServiceManaging = StartupService(),
-        notificationService: PriceAlertNotifying = PriceAlertNotificationService()
+        preferencesStorage: MarketPreferencesStorage = UserDefaultsMarketPreferencesStorage()
     ) {
         self.preferencesStorage = preferencesStorage
-        self.startupService = startupService
-        self.notificationService = notificationService
         let preferences = preferencesStorage.load()
         selectedAsset = preferences.selectedAsset
         displayMode = preferences.displayMode
@@ -106,21 +79,10 @@ final class MarketStore: ObservableObject {
         refreshIntervalSeconds = preferences.refreshIntervalSeconds
         showUSDT = preferences.showUSDT
         showUSDC = preferences.showUSDC
-        startAtLogin = preferences.startAtLogin
-        priceAlertsEnabled = preferences.priceAlertsEnabled
         referenceSource = preferences.referenceSource
         fiat = preferences.fiat
         visibleExchanges = preferences.visibleExchanges
         ensureSelectedAssetIsVisible()
-        refreshStartupStatus()
-        applyStartupPreference()
-        if PriceAlertAuthorizationPolicy.shouldPromptForAuthorization(
-            context: .appLaunch,
-            priceAlertsEnabled: priceAlertsEnabled,
-            wasPriceAlertsEnabled: priceAlertsEnabled
-        ) {
-            requestNotificationAuthorization()
-        }
         refresh()
         restartRefreshLoop()
     }
@@ -269,7 +231,6 @@ final class MarketStore: ObservableObject {
             liveQuotes = quotes
             liveRefreshedAt = refreshedAt
             dataState = .live(refreshedAt)
-            await deliverPriceAlertsIfNeeded(now: refreshedAt)
         } catch {
             dataState = .failed(String(describing: error))
         }
@@ -356,8 +317,6 @@ final class MarketStore: ObservableObject {
                 refreshIntervalSeconds: refreshIntervalSeconds,
                 showUSDT: showUSDT,
                 showUSDC: showUSDC,
-                startAtLogin: startAtLogin,
-                priceAlertsEnabled: priceAlertsEnabled,
                 referenceSource: referenceSource,
                 fiat: fiat,
                 visibleExchanges: visibleExchanges
@@ -371,39 +330,6 @@ final class MarketStore: ObservableObject {
         }
 
         selectedAsset = fallbackAsset
-    }
-
-    private func applyStartupPreference() {
-        do {
-            try startupService.setEnabled(startAtLogin)
-            refreshStartupStatus()
-        } catch {
-            startupStatusText = StartupServiceStatus.failed(error.localizedDescription).displayText
-        }
-    }
-
-    private func refreshStartupStatus() {
-        startupStatusText = startupService.status.displayText
-    }
-
-    private func requestNotificationAuthorization() {
-        Task { [weak self] in
-            guard let self else { return }
-            let status = await notificationService.requestAuthorization()
-            await MainActor.run {
-                self.notificationStatusText = status.displayText
-            }
-        }
-    }
-
-    private func deliverPriceAlertsIfNeeded(now: Date) async {
-        guard priceAlertsEnabled else { return }
-
-        let events = priceAlertEvaluator.evaluate(snapshot: snapshot, now: now)
-        for event in events {
-            let status = await notificationService.deliver(event)
-            notificationStatusText = status.displayText
-        }
     }
 }
 

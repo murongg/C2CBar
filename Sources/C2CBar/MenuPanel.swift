@@ -186,10 +186,6 @@ private struct PanelContent: View {
                 )
             }
 
-            if policy.showsAlertPreview {
-                AlertPreview()
-            }
-
             if policy.showsFooter {
                 FooterBar(store: store)
             }
@@ -241,30 +237,6 @@ private struct MenuSettingsPanel: View {
                             }
                         }
                     }
-                }
-
-                SettingsRow(title: "开机启动") {
-                    HStack(spacing: 8) {
-                        Text(store.startupStatusText)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Color.secondary)
-                        Toggle("", isOn: $store.startAtLogin)
-                            .labelsHidden()
-                            .toggleStyle(.switch)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-
-                SettingsRow(title: "价格提醒") {
-                    HStack(spacing: 8) {
-                        Text(store.notificationStatusText)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Color.secondary)
-                        Toggle("", isOn: $store.priceAlertsEnabled)
-                            .labelsHidden()
-                            .toggleStyle(.switch)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
 
                 SettingsDivider()
@@ -864,66 +836,6 @@ private struct CompactPlatformRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-    }
-}
-
-private struct AlertPreview: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("价格提醒")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.secondary)
-
-            HStack(spacing: 10) {
-                AlertCard(
-                    icon: "bell.fill",
-                    tint: .green,
-                    title: "USDT 出金溢价超过 2%",
-                    subtitle: "当前出金溢价 +1.99%"
-                )
-
-                AlertCard(
-                    icon: "bell.fill",
-                    tint: .red,
-                    title: "入金低于 7.25",
-                    subtitle: "当前入金价 7.246"
-                )
-            }
-        }
-    }
-}
-
-private struct AlertCard: View {
-    let icon: String
-    let tint: Color
-    let title: String
-    let subtitle: String
-
-    var body: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(tint)
-                Image(systemName: icon)
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 26, height: 26)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                Text(subtitle)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(Color.secondary)
-                    .lineLimit(1)
-            }
-        }
-        .padding(10)
-        .frame(maxWidth: .infinity, minHeight: 62, alignment: .leading)
-        .background(CardBackground())
     }
 }
 

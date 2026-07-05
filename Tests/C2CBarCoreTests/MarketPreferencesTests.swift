@@ -7,8 +7,6 @@ final class MarketPreferencesTests: XCTestCase {
 
         XCTAssertEqual(preferences.refreshIntervalSeconds, 900)
         XCTAssertEqual(preferences.visibleExchanges, [.binance, .okx, .htx])
-        XCTAssertFalse(preferences.startAtLogin)
-        XCTAssertFalse(preferences.priceAlertsEnabled)
     }
 
     func testCodableRoundTripPreservesUserSettings() throws {
@@ -19,8 +17,6 @@ final class MarketPreferencesTests: XCTestCase {
             refreshIntervalSeconds: 1_800,
             showUSDT: true,
             showUSDC: false,
-            startAtLogin: false,
-            priceAlertsEnabled: true,
             referenceSource: .wise,
             fiat: .cny,
             visibleExchanges: [.okx]
