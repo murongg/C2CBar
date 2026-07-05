@@ -76,7 +76,7 @@ scripts/package.sh
 打包产物会生成在 `dist/`：
 
 - `dist/C2CBar.app`
-- `dist/C2CBar-<version>-macos.zip`
+- `dist/C2CBar-<version>-macos.dmg`
 
 默认使用 ad-hoc 签名，适合本地测试。公开分发时建议使用 Developer ID 证书签名并完成 notarization。
 

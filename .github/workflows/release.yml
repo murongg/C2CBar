@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: C2CBar-${{ steps.version.outputs.version }}-macos
-          path: dist/*.zip
+          path: dist/*.dmg
           if-no-files-found: error
 
       - name: Create GitHub release
@@ -126,7 +126,7 @@ jobs:
             release_flags+=(--prerelease)
           fi
 
-          gh release create "$TAG" dist/*.zip \
+          gh release create "$TAG" dist/*.dmg \
             --target "$GITHUB_SHA" \
             --title "C2CBar $VERSION" \
             --notes-file dist/release-notes.md \

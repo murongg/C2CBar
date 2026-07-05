@@ -11,7 +11,7 @@ scripts/package.sh
 The package script creates:
 
 - `dist/C2CBar.app`
-- `dist/C2CBar-<version>-macos.zip`
+- `dist/C2CBar-<version>-macos.dmg`
 
 Useful environment variables:
 
@@ -43,7 +43,7 @@ git push origin v0.1.0
 
 You can also run the `Release` workflow manually from GitHub Actions and provide a version.
 
-The release workflow can work without Apple secrets and will upload an ad-hoc signed zip. To produce a Developer ID signed and notarized app, configure these repository secrets:
+The release workflow can work without Apple secrets and will upload an ad-hoc signed DMG. To produce a Developer ID signed and notarized app, configure these repository secrets:
 
 - `DEVELOPER_ID_APPLICATION_P12`: base64 encoded `.p12` signing certificate
 - `DEVELOPER_ID_APPLICATION_PASSWORD`: password for the `.p12`

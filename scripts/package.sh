@@ -13,7 +13,7 @@ APP_DIR="$DIST_DIR/$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
-ZIP_PATH="$DIST_DIR/$APP_NAME-$VERSION-macos.zip"
+DMG_PATH="$DIST_DIR/$APP_NAME-$VERSION-macos.dmg"
 SIGNING_MODE="${SIGNING_MODE:-adhoc}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 NOTARIZE="${NOTARIZE:-0}"
@@ -128,10 +128,20 @@ sign_app() {
   fi
 }
 
-create_zip() {
-  rm -f "$ZIP_PATH"
-  ditto -c -k --norsrc --keepParent "$APP_DIR" "$ZIP_PATH"
-  log "Created $ZIP_PATH"
+create_dmg() {
+  local dmg_root="$DIST_DIR/dmg-root"
+  rm -rf "$dmg_root" "$DMG_PATH"
+  mkdir -p "$dmg_root"
+  cp -R "$APP_DIR" "$dmg_root/"
+  ln -s /Applications "$dmg_root/Applications"
+  hdiutil create \
+    -volname "$APP_NAME" \
+    -srcfolder "$dmg_root" \
+    -ov \
+    -format UDZO \
+    "$DMG_PATH"
+  rm -rf "$dmg_root"
+  log "Created $DMG_PATH"
 }
 
 notarize_app() {
@@ -143,12 +153,11 @@ notarize_app() {
     exit 1
   fi
 
-  log "Submitting app for notarization"
-  xcrun notarytool submit "$ZIP_PATH" --keychain-profile "$APPLE_KEYCHAIN_PROFILE" --wait
+  log "Submitting DMG for notarization"
+  xcrun notarytool submit "$DMG_PATH" --keychain-profile "$APPLE_KEYCHAIN_PROFILE" --wait
   log "Stapling notarization ticket"
-  xcrun stapler staple "$APP_DIR"
-  xcrun stapler validate "$APP_DIR"
-  create_zip
+  xcrun stapler staple "$DMG_PATH"
+  xcrun stapler validate "$DMG_PATH"
 }
 
 log "Building $APP_NAME ($CONFIGURATION)"
@@ -174,7 +183,7 @@ copy_resource_bundles "$BIN_PATH"
 create_info_plist
 create_app_icon
 sign_app
-create_zip
+create_dmg
 notarize_app
 
-log "Package ready: $ZIP_PATH"
+log "Package ready: $DMG_PATH"

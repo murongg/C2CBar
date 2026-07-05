@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: C2CBar-macos
-          path: dist/*.zip
+          path: dist/*.dmg
           if-no-files-found: error
