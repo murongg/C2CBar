@@ -10,6 +10,11 @@ on:
         description: "Release version, for example 0.1.0"
         required: true
         type: string
+      prerelease:
+        description: "Mark the GitHub release as a pre-release"
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -44,8 +49,10 @@ jobs:
             tag="${GITHUB_REF_NAME}"
             version="${tag#v}"
           fi
+          prerelease="${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || contains(github.ref_name, '-') }}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
 
       - name: Show toolchain
         run: |
@@ -112,8 +119,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           VERSION: ${{ steps.version.outputs.version }}
+          PRERELEASE: ${{ steps.version.outputs.prerelease }}
         run: |
+          release_flags=()
+          if [[ "$PRERELEASE" == "true" ]]; then
+            release_flags+=(--prerelease)
+          fi
+
           gh release create "$TAG" dist/*.zip \
             --target "$GITHUB_SHA" \
             --title "C2CBar $VERSION" \
-            --notes-file dist/release-notes.md
+            --notes-file dist/release-notes.md \
+            "${release_flags[@]}"
