@@ -2,10 +2,10 @@ import XCTest
 @testable import C2CBarCore
 
 final class MarketPreferencesTests: XCTestCase {
-    func testDefaultsUseOneMinuteRefreshAndSupportedExchanges() {
+    func testDefaultsUseFifteenMinuteRefreshAndSupportedExchanges() {
         let preferences = MarketPreferences.default
 
-        XCTAssertEqual(preferences.refreshIntervalSeconds, 60)
+        XCTAssertEqual(preferences.refreshIntervalSeconds, 900)
         XCTAssertEqual(preferences.visibleExchanges, [.binance, .okx, .htx])
     }
 

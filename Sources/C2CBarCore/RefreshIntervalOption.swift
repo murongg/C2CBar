@@ -22,7 +22,7 @@ public enum RefreshIntervalOption: Int, Codable, CaseIterable, Identifiable, Sen
         }
     }
 
-    public static let defaultOption: RefreshIntervalOption = .oneMinute
+    public static let defaultOption: RefreshIntervalOption = .fifteenMinutes
 
     public static func option(seconds: Int) -> RefreshIntervalOption {
         RefreshIntervalOption(rawValue: seconds) ?? defaultOption
