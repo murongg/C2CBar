@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export COPYFILE_DISABLE=1
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 APP_NAME="${APP_NAME:-C2CBar}"
@@ -17,7 +18,7 @@ SIGNING_MODE="${SIGNING_MODE:-adhoc}"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
 NOTARIZE="${NOTARIZE:-0}"
 APPLE_KEYCHAIN_PROFILE="${APPLE_KEYCHAIN_PROFILE:-}"
-ICON_SOURCE="${ICON_SOURCE:-$ROOT_DIR/Sources/C2CBarAssets/Resources/Tokens/usdc.png}"
+ICON_SOURCE="${ICON_SOURCE:-$ROOT_DIR/Sources/C2CBarAssets/Resources/AppIcon/c2cbar.png}"
 
 log() {
   printf '==> %s\n' "$*"
@@ -129,7 +130,7 @@ sign_app() {
 
 create_zip() {
   rm -f "$ZIP_PATH"
-  ditto -c -k --keepParent "$APP_DIR" "$ZIP_PATH"
+  ditto -c -k --norsrc --keepParent "$APP_DIR" "$ZIP_PATH"
   log "Created $ZIP_PATH"
 }
 
