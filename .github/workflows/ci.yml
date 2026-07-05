@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    name: Test and package
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Run tests
+        run: swift test
+
+      - name: Build release product
+        run: swift build -c release --product C2CBar
+
+      - name: Package app
+        env:
+          VERSION: 0.0.0
+          BUILD_NUMBER: ${{ github.run_number }}
+          SIGNING_MODE: adhoc
+        run: scripts/package.sh
+
+      - name: Upload app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: C2CBar-macos
+          path: dist/*.zip
+          if-no-files-found: error
